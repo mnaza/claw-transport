@@ -1,0 +1,30 @@
+[package]
+name = "async-transport"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Async byte-stream transport trait with pluggable TLS backends"
+keywords = ["async", "transport", "tls", "wasm", "tokio"]
+categories = ["network-programming", "asynchronous"]
+rust-version = "1.75"
+
+[dependencies]
+thiserror = "2"
+
+# WASM: epoxy-tls via JS bridge
+wasm-bindgen = { version = "0.2", optional = true }
+wasm-bindgen-futures = { version = "0.4", optional = true }
+js-sys = { version = "0.3", optional = true }
+
+# Native: tokio + rustls
+tokio = { version = "1", features = ["net", "io-util", "time"], optional = true }
+tokio-rustls = { version = "0.26", optional = true }
+webpki-roots = { version = "0.26", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt", "macros", "net", "io-util", "time"] }
+
+[features]
+default = []
+wasm = ["dep:wasm-bindgen", "dep:wasm-bindgen-futures", "dep:js-sys"]
+native = ["dep:tokio", "dep:tokio-rustls", "dep:webpki-roots"]
