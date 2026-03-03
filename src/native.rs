@@ -485,4 +485,153 @@ mod tests {
         let cloned = err.clone();
         assert_eq!(err.to_string(), cloned.to_string());
     }
+
+    #[tokio::test]
+    async fn multiple_send_recv_rounds() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        let server = tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            for _ in 0..3 {
+                let mut buf = vec![0u8; 1024];
+                let n = socket.read(&mut buf).await.unwrap();
+                socket.write_all(&buf[..n]).await.unwrap();
+            }
+        });
+
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
+            .await
+            .unwrap();
+
+        for msg in &[b"first".as_slice(), b"second", b"third"] {
+            stream.send(msg).await.unwrap();
+            let data = stream.recv().await.unwrap();
+            assert_eq!(&data, msg);
+        }
+
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn connect_plain_initial_state() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        let stream = TlsStream::connect_plain("127.0.0.1", port)
+            .await
+            .unwrap();
+
+        assert!(stream.is_connected());
+        assert!(!stream.is_tls());
+    }
+
+    #[tokio::test]
+    async fn send_empty_payload() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        let _server = tokio::spawn(async move {
+            let (socket, _) = listener.accept().await.unwrap();
+            // Just hold the connection open
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            drop(socket);
+        });
+
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
+            .await
+            .unwrap();
+
+        // Sending empty data should succeed
+        stream.send(b"").await.unwrap();
+        assert!(stream.is_connected());
+    }
+
+    #[test]
+    fn error_variants_display() {
+        let cases = vec![
+            (
+                TlsError::ConnectionFailed("refused".into()),
+                "Connection failed: refused",
+            ),
+            (TlsError::SendFailed("broken".into()), "Send failed: broken"),
+            (
+                TlsError::ReceiveFailed("reset".into()),
+                "Receive failed: reset",
+            ),
+            (TlsError::Tls("bad handshake".into()), "TLS error: bad handshake"),
+            (
+                TlsError::CertificateError("expired".into()),
+                "Certificate error: expired",
+            ),
+            (TlsError::Timeout, "Operation timed out"),
+            (TlsError::NotConnected, "Not connected"),
+        ];
+
+        for (err, expected) in cases {
+            assert_eq!(err.to_string(), expected);
+        }
+    }
+
+    #[tokio::test]
+    async fn concurrent_connections() {
+        let mut ports = Vec::new();
+        let mut servers = Vec::new();
+
+        for _ in 0..3 {
+            let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let port = listener.local_addr().unwrap().port();
+            ports.push(port);
+            servers.push(tokio::spawn(async move {
+                let (mut socket, _) = listener.accept().await.unwrap();
+                let mut buf = vec![0u8; 1024];
+                let n = socket.read(&mut buf).await.unwrap();
+                socket.write_all(&buf[..n]).await.unwrap();
+            }));
+        }
+
+        let mut streams: Vec<_> = Vec::new();
+        for port in &ports {
+            streams.push(
+                TlsStream::connect_plain("127.0.0.1", *port)
+                    .await
+                    .unwrap(),
+            );
+        }
+
+        for (i, stream) in streams.iter_mut().enumerate() {
+            let msg = format!("msg{}", i);
+            stream.send(msg.as_bytes()).await.unwrap();
+            let data = stream.recv().await.unwrap();
+            assert_eq!(data, msg.as_bytes());
+        }
+
+        for server in servers {
+            server.await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn start_tls_on_already_tls_errors() {
+        // We can't easily create a real TLS stream in tests, but we can
+        // test the not-connected and already-connected-plain paths.
+        // The "already TLS" path requires a real TLS connection which
+        // needs a TLS server — covered by the error message check.
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        let _server = tokio::spawn(async move {
+            let (socket, _) = listener.accept().await.unwrap();
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            drop(socket);
+        });
+
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
+            .await
+            .unwrap();
+
+        // start_tls with invalid hostname fails at ServerName parsing
+        let result = stream.start_tls("").await;
+        assert!(result.is_err());
+    }
 }

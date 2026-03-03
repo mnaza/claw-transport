@@ -7,6 +7,8 @@ description = "Async byte-stream transport trait with pluggable TLS backends"
 keywords = ["async", "transport", "tls", "wasm", "tokio"]
 categories = ["network-programming", "asynchronous"]
 rust-version = "1.75"
+repository = "https://git.3ig.dev/andrey/claw-transport"
+readme = "README.org"
 
 [dependencies]
 thiserror = "2"
@@ -19,10 +21,10 @@ js-sys = { version = "0.3", optional = true }
 # Native: tokio + rustls
 tokio = { version = "1", features = ["net", "io-util", "time"], optional = true }
 tokio-rustls = { version = "0.26", optional = true }
-webpki-roots = { version = "0.26", optional = true }
+webpki-roots = { version = "1", optional = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt", "macros", "net", "io-util", "time"] }
+tokio = { version = "1", features = ["rt", "macros", "net", "io-util", "time", "sync"] }
 
 [features]
 default = []
