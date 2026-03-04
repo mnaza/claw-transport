@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+- Add examples (`echo`, `custom_transport`)
+- Add CI/CD workflows (fmt, clippy, test, WASM check, MSRV, release)
+- Add `#[deny(missing_docs)]` lint
+- Update `webpki-roots` from 0.26 to 1.0
+- Add LICENSE file, CHANGELOG, author metadata
+
 ## 0.1.0
 
 Initial release.

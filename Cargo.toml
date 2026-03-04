@@ -1,6 +1,6 @@
 [package]
 name = "claw-transport"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Andriy Mnatsakanov <andrey@3ig.dev>"]
 license = "MIT"
