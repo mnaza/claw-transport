@@ -2,6 +2,7 @@
 name = "claw-transport"
 version = "0.1.0"
 edition = "2021"
+authors = ["Andriy Mnatsakanov <andrey@3ig.dev>"]
 license = "MIT"
 description = "Async byte-stream transport trait with pluggable TLS backends"
 keywords = ["async", "transport", "tls", "wasm", "tokio"]
