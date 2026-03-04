@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- Switch README from org-mode to Markdown (crates.io rendering)
+- Add `homepage` and `documentation` metadata
+
 ## 0.1.1
 
 - Add examples (`echo`, `custom_transport`)
