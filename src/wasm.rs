@@ -66,9 +66,7 @@ impl TlsError {
 
 impl From<JsValue> for TlsError {
     fn from(value: JsValue) -> Self {
-        let msg = value
-            .as_string()
-            .unwrap_or_else(|| format!("{:?}", value));
+        let msg = value.as_string().unwrap_or_else(|| format!("{:?}", value));
         TlsError::Js(msg)
     }
 }
@@ -150,11 +148,7 @@ impl TlsStream {
     ///
     /// Returns [`TlsError::CertificateError`] if the server's certificate is
     /// invalid. Call [`trust_host`](Self::trust_host) and retry to accept it.
-    pub async fn connect(
-        backend_url: &str,
-        host: &str,
-        port: u16,
-    ) -> Result<Self, TlsError> {
+    pub async fn connect(backend_url: &str, host: &str, port: u16) -> Result<Self, TlsError> {
         let tls = create_tls_connection();
 
         let connect_promise = tls.connect(backend_url, host, port);
@@ -189,11 +183,7 @@ impl TlsStream {
     ///
     /// Returns [`TlsError::ConnectionFailed`] if the TCP connection cannot
     /// be established.
-    pub async fn connect_plain(
-        backend_url: &str,
-        host: &str,
-        port: u16,
-    ) -> Result<Self, TlsError> {
+    pub async fn connect_plain(backend_url: &str, host: &str, port: u16) -> Result<Self, TlsError> {
         let tls = create_tls_connection();
 
         let connect_promise = tls.connect_plain(backend_url, host, port);
@@ -226,14 +216,10 @@ impl TlsStream {
         }
 
         let promise = self.tls.start_tls(hostname);
-        JsFuture::from(promise)
-            .await
-            .map_err(|e| {
-                let msg = e
-                    .as_string()
-                    .unwrap_or_else(|| format!("{:?}", e));
-                TlsError::Tls(format!("STARTTLS handshake failed: {}", msg))
-            })?;
+        JsFuture::from(promise).await.map_err(|e| {
+            let msg = e.as_string().unwrap_or_else(|| format!("{:?}", e));
+            TlsError::Tls(format!("STARTTLS handshake failed: {}", msg))
+        })?;
 
         Ok(())
     }

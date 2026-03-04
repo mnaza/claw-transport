@@ -32,7 +32,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Connect using claw-transport
     let mut stream = TlsStream::connect_plain("127.0.0.1", port).await?;
-    println!("Connected: is_tls={}, is_connected={}", stream.is_tls(), stream.is_connected());
+    println!(
+        "Connected: is_tls={}, is_connected={}",
+        stream.is_tls(),
+        stream.is_connected()
+    );
 
     // Send and receive
     let message = b"Hello from claw-transport!\r\n";

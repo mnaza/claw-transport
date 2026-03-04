@@ -16,10 +16,7 @@ impl Transport for ChannelTransport {
     type Error = String;
 
     async fn send(&mut self, data: &[u8]) -> Result<(), Self::Error> {
-        self.tx
-            .send(data.to_vec())
-            .await
-            .map_err(|e| e.to_string())
+        self.tx.send(data.to_vec()).await.map_err(|e| e.to_string())
     }
 
     async fn recv(&mut self) -> Result<Vec<u8>, Self::Error> {
@@ -60,7 +57,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Drop server — client should detect disconnect
     drop(server);
-    println!("After server drop, client connected: {}", client.is_connected());
+    println!(
+        "After server drop, client connected: {}",
+        client.is_connected()
+    );
 
     Ok(())
 }

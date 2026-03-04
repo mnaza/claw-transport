@@ -360,9 +360,7 @@ mod tests {
             socket.write_all(&buf[..n]).await.unwrap();
         });
 
-        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
-            .await
-            .unwrap();
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port).await.unwrap();
         assert!(stream.is_connected());
         assert!(!stream.is_tls());
 
@@ -383,9 +381,7 @@ mod tests {
             drop(socket);
         });
 
-        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
-            .await
-            .unwrap();
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port).await.unwrap();
         server.await.unwrap();
 
         // Give the server side time to close
@@ -406,9 +402,7 @@ mod tests {
             drop(socket);
         });
 
-        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
-            .await
-            .unwrap();
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port).await.unwrap();
         server.await.unwrap();
         tokio::time::sleep(Duration::from_millis(50)).await;
 
@@ -454,9 +448,7 @@ mod tests {
         });
 
         let payload = vec![0xABu8; 100_000];
-        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
-            .await
-            .unwrap();
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port).await.unwrap();
         stream.send(&payload).await.unwrap();
         // Close write side so server sees EOF and echoes back
         if let Some(Inner::Plain(tcp)) = stream.inner.as_ref() {
@@ -500,9 +492,7 @@ mod tests {
             }
         });
 
-        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
-            .await
-            .unwrap();
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port).await.unwrap();
 
         for msg in &[b"first".as_slice(), b"second", b"third"] {
             stream.send(msg).await.unwrap();
@@ -518,9 +508,7 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let port = listener.local_addr().unwrap().port();
 
-        let stream = TlsStream::connect_plain("127.0.0.1", port)
-            .await
-            .unwrap();
+        let stream = TlsStream::connect_plain("127.0.0.1", port).await.unwrap();
 
         assert!(stream.is_connected());
         assert!(!stream.is_tls());
@@ -538,9 +526,7 @@ mod tests {
             drop(socket);
         });
 
-        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
-            .await
-            .unwrap();
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port).await.unwrap();
 
         // Sending empty data should succeed
         stream.send(b"").await.unwrap();
@@ -559,7 +545,10 @@ mod tests {
                 TlsError::ReceiveFailed("reset".into()),
                 "Receive failed: reset",
             ),
-            (TlsError::Tls("bad handshake".into()), "TLS error: bad handshake"),
+            (
+                TlsError::Tls("bad handshake".into()),
+                "TLS error: bad handshake",
+            ),
             (
                 TlsError::CertificateError("expired".into()),
                 "Certificate error: expired",
@@ -592,11 +581,7 @@ mod tests {
 
         let mut streams: Vec<_> = Vec::new();
         for port in &ports {
-            streams.push(
-                TlsStream::connect_plain("127.0.0.1", *port)
-                    .await
-                    .unwrap(),
-            );
+            streams.push(TlsStream::connect_plain("127.0.0.1", *port).await.unwrap());
         }
 
         for (i, stream) in streams.iter_mut().enumerate() {
@@ -626,9 +611,7 @@ mod tests {
             drop(socket);
         });
 
-        let mut stream = TlsStream::connect_plain("127.0.0.1", port)
-            .await
-            .unwrap();
+        let mut stream = TlsStream::connect_plain("127.0.0.1", port).await.unwrap();
 
         // start_tls with invalid hostname fails at ServerName parsing
         let result = stream.start_tls("").await;
