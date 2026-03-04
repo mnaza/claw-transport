@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Point repository/homepage to GitHub
+
 ## 0.1.2
 
 - Switch README from org-mode to Markdown (crates.io rendering)
