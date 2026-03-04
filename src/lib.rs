@@ -1,3 +1,4 @@
+#![deny(missing_docs)]
 //! Async byte-stream transport trait with pluggable TLS backends.
 //!
 //! Provides a [`Transport`] trait that abstracts over byte-stream
